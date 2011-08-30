@@ -2,7 +2,7 @@ Installation:
 1) install the gem
 gem install sequel_acts_as_cacheable
 2) specify the plugin in your sequel model
-plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => MEMCACHE['model_cache_ttl']
+plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 60  (this is the time to live in seconds)
 
 This plugin is able to utilize the caching provided by the memcache-client or dalli gems to automatically cache primary key lookups. Additionally, for more manual control the methods cache!, cached?, uncache!, and invalidate_cache! are also added to the sequel model.
 
