@@ -1,0 +1,103 @@
+module Sequel
+  module Plugins
+    module ActsAsCacheable
+      def self.configure(model, opts={})
+        model.instance_eval do
+          @acts_as_cacheable_cache = opts[:cache]
+          @acts_as_cacheable_time_to_live = opts[:time_to_live] || 3600
+        end
+      end
+
+      module ClassMethods
+        attr_accessor :acts_as_cacheable_cache
+        attr_accessor :acts_as_cacheable_time_to_live
+
+        # Copy the necessary class instance variables to the subclass.
+         def inherited(subclass)
+          super
+          subclass.acts_as_cacheable_cache = acts_as_cacheable_cache
+          subclass.acts_as_cacheable_time_to_live = acts_as_cacheable_time_to_live
+        end
+
+        def model_cache_key model_id
+          "#{name}~#{model_id}"
+        end
+
+        def [](*args)
+          if 1 == args.size && (Fixnum == args.first.class || (String == args.first.class && args.first.is_integer?))
+            key = model_cache_key args.first
+            begin
+              cache_value = @acts_as_cacheable_cache.get key
+            rescue Exception => e
+              logger.error "CACHE.get failed in primary key lookup with args #{args.inspect} and model #{self.class.name} so using mysql lookup instead, exception was #{e.inspect}"
+              cache_value = super *args
+            end
+
+            if !cache_value
+              cache_value = super *args
+              @acts_as_cacheable_cache.set key, cache_value, @acts_as_cacheable_time_to_live
+            end
+
+            cache_value
+          else
+            super *args
+          end
+        end
+      end
+
+      module InstanceMethods
+        def cache!
+          unless new?
+            marshallable!
+            acts_as_cacheable_cache.set model_cache_key, self, acts_as_cacheable_time_to_live
+          end
+        end
+
+        def uncache!
+          acts_as_cacheable_cache.delete self.class.model_cache_key id
+        end
+        alias_method :invalidate_cache!, :uncache!
+
+        def cached?
+          acts_as_cacheable_cache.get(model_cache_key).present?
+        end
+
+        def save *columns
+          result = super *columns
+          invalidate_cache! if result && !new?
+          result
+        end
+
+        def delete
+          result = super
+          invalidate_cache!
+          result
+        end
+
+        def destroy opts = {}
+          result = super opts
+          invalidate_cache! unless false == result
+          result
+        end
+
+        private
+        def model_cache_key
+          model.model_cache_key id
+        end
+
+        def acts_as_cacheable_cache
+          model.acts_as_cacheable_cache
+        end
+
+        def acts_as_cacheable_time_to_live
+          model.acts_as_cacheable_time_to_live
+        end
+      end
+    end
+  end
+end
+
+
+
+
+
