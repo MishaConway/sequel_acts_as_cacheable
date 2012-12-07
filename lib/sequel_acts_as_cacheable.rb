@@ -13,18 +13,40 @@ module Sequel
         attr_accessor :acts_as_cacheable_time_to_live
 
         # Copy the necessary class instance variables to the subclass.
-         def inherited(subclass)
+        def inherited(subclass)
           super
           subclass.acts_as_cacheable_cache = acts_as_cacheable_cache
           subclass.acts_as_cacheable_time_to_live = acts_as_cacheable_time_to_live
         end
 
         def model_cache_key model_id
-          "#{name}~#{model_id}"
+          base_model_klass = self
+          base_model_klass = base_model_klass.superclass while Sequel::Model != base_model_klass
+          "#{base_model_klass.name}~#{model_id}"
         end
 
         def [](*args)
-          if 1 == args.size && (Fixnum == args.first.class || (String == args.first.class && args.first.is_integer?))
+          is_primary_key_lookup =
+              if 1 == args.size
+                if Fixnum == args.first.class
+                  true
+                else
+                  if String == args.first.class
+                    begin
+                      Integer(args.first)
+                      true
+                    rescue
+                      false
+                    end
+                  else
+                    false
+                  end
+                end
+              else
+                false
+              end
+
+          if is_primary_key_lookup
             key = model_cache_key args.first
             begin
               cache_value = @acts_as_cacheable_cache.get key
@@ -56,6 +78,7 @@ module Sequel
         def uncache!
           acts_as_cacheable_cache.delete self.class.model_cache_key id
         end
+
         alias_method :invalidate_cache!, :uncache!
 
         def cached?
