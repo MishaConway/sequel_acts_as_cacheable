@@ -21,7 +21,7 @@ module Sequel
 
         def model_cache_key model_id
           base_model_klass = self
-          base_model_klass = base_model_klass.superclass while Sequel::Model != base_model_klass
+          base_model_klass = base_model_klass.superclass while Sequel::Model != base_model_klass.superclass
           "#{base_model_klass.name}~#{model_id}"
         end
 
