@@ -57,7 +57,7 @@ module Sequel
 
             if !cache_value
               cache_value = super *args
-              @acts_as_cacheable_cache.set key, cache_value, @acts_as_cacheable_time_to_live
+              cache_value.cache!
             end
 
             cache_value
@@ -71,6 +71,9 @@ module Sequel
         def cache!
           unless new?
             marshallable!
+            if respond_to? :before_cache
+              before_cache
+            end
             acts_as_cacheable_cache.set model_cache_key, self, acts_as_cacheable_time_to_live
           end
         end
