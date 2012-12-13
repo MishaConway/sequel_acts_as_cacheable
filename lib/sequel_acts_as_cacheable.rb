@@ -57,7 +57,7 @@ module Sequel
 
             if !cache_value
               cache_value = super *args
-              cache_value.cache!
+              cache_value.cache! if cache_value
             end
 
             cache_value
