@@ -6,6 +6,21 @@ plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 60  (this is the ti
 
 This plugin is able to utilize the caching provided by the memcache-client or dalli gems to automatically cache primary key lookups. Additionally, for more manual control the methods cache!, cached?, uncache!, and invalidate_cache! are also added to the sequel model.
 
+If you want to customize the caching to lump extra data into the cache you can use the before_cache hook.
+
+class Thing < Sequel::Model
+    def heavy_computation
+        @heavy_computation ||= ...
+    end
+
+
+    def before_cache
+        heavy_computation
+    end
+end
+
+
+
 
 
 
