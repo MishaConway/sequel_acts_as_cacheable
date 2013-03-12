@@ -21,9 +21,9 @@ This gem is designed to work in concert with the dalli gem, but you can really u
         CACHE = Dalli::Client.new 'localhost:11211'
         Sequel::Model.plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 3600
 
-      -Once a model has been setup with this plugin, it will automatically cache primary key lookups. An example of
-      such a lookup is Account[3] or Report[55].
-      -It will automatically break cache whenever you call save on the model.
+Once a model has been setup with this plugin, it will
+    -automatically cache primary key lookups. An example of such a lookup is Account[3] or Report[55].
+    -automatically break cache whenever you call save on the model.
 
 ## Additional methods provided for manual control of caching
     -cache!
