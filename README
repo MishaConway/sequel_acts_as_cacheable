@@ -47,8 +47,7 @@ This plugin adds the before_cache hook so you can have more control over what ge
             end
         end
 
-In this example, the next time a Thing object is retrieved from cache, it will automatically have the result of the
-heavy computation.
+In this example, the next time a Thing object is retrieved from cache, it will automatically have the result of the heavy computation.
 
 
 
