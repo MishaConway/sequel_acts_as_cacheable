@@ -1,23 +1,74 @@
-Installation:
-1) install the gem
-gem install sequel_acts_as_cacheable
-2) specify the plugin in your sequel model
-plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 60  (this is the time to live in seconds)
+## Installation
 
-This plugin is able to utilize the caching provided by the memcache-client or dalli gems to automatically cache primary key lookups. Additionally, for more manual control the methods cache!, cached?, uncache!, and invalidate_cache! are also added to the sequel model.
+Add this line to your application's Gemfile:
 
-If you want to customize the caching to lump extra data into the cache you can use the before_cache hook.
+    gem 'sequel_acts_as_cacheable'
 
-class Thing < Sequel::Model
-    def heavy_computation
-        @heavy_computation ||= ...
-    end
+Or install it yourself as:
+
+    $ gem install sequel_acts_as_cacheable
+
+## Usage
+
+Allows you to setup model level caching for your Sequel ORM models.
+This gem is designed to work in concert with the dalli gem, but you can really use any caching adapter that implements the following methods:
+    -set key, value, time_to_live=nil
+    -get key
+    -delete key
 
 
-    def before_cache
-        heavy_computation
-    end
-end
+      Example using dalli:
+        CACHE = Dalli::Client.new 'localhost:11211'
+        Sequel::Model.plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 3600
+
+      -Once a model has been setup with this plugin, it will automatically cache primary key lookups. An example of
+      such a lookup is Account[3] or Report[55].
+      -It will automatically break cache whenever you call save on the model.
+
+## Additional methods provided for manual control of caching
+    -cache!
+    -cached?
+    -uncache!
+    -invalidate_cache!
+
+## Additional hooks provided
+
+    This plugin adds the before_cache hook so you can have more control over what gets cached into your model.
+    Example usage:
+        class Thing < Sequel::Model
+            plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 3600
+
+            def before_cache
+                heavy_computation
+            end
+
+            def heavy_computation
+                @heavy_computation ||= ...
+            end
+        end
+
+    In this example, the next time a Thing object is retrieved from cache, it will automatically have the result of the
+    heavy computation.
+
+
+
+
+
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
+or.......
+If you have any suggestions for how to make this better or extend it, please email me at MishaAConway@gmail.com and I
+will be happy to consider suggestions.
+
+
+
+
 
 
 
