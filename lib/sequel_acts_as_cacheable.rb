@@ -60,7 +60,11 @@ module Sequel
               cache_value.cache! if cache_value
             end
 
-            cache_value
+            if cache_value.kind_of? self
+              cache_value
+            else
+              nil
+            end
           else
             super *args
           end
