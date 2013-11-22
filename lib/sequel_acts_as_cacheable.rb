@@ -99,7 +99,11 @@ module Sequel
         end
 
         def delete
-          result = super
+          begin
+            result = super
+          rescue Sequel::NoExistingObject
+            logger.error "attempted to delete a record that doesn't exist"
+          end
           invalidate_cache!
           result
         end
