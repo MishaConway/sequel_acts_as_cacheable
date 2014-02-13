@@ -36,7 +36,7 @@ Once a model has been setup with this plugin, it will
 This plugin adds the before_cache hook so you can have more control over what gets cached into your model.
     Example usage:
         class Thing < Sequel::Model
-            plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 3600
+            plugin :acts_as_cacheable, :cache => CACHE, :time_to_live => 3600, :logger => logger  #logger is optional
 
             def before_cache
                 heavy_computation

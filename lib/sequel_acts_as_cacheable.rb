@@ -5,18 +5,21 @@ module Sequel
         model.instance_eval do
           @acts_as_cacheable_cache = opts[:cache]
           @acts_as_cacheable_time_to_live = opts[:time_to_live] || 3600
+          @acts_as_cacheable_logger = opts[:logger]
         end
       end
 
       module ClassMethods
         attr_accessor :acts_as_cacheable_cache
         attr_accessor :acts_as_cacheable_time_to_live
+        attr_accessor :acts_as_cacheable_logger
 
         # Copy the necessary class instance variables to the subclass.
         def inherited(subclass)
           super
           subclass.acts_as_cacheable_cache = acts_as_cacheable_cache
           subclass.acts_as_cacheable_time_to_live = acts_as_cacheable_time_to_live
+          subclass.acts_as_cacheable_logger = acts_as_cacheable_logger
         end
 
         def model_cache_key model_id
@@ -51,7 +54,9 @@ module Sequel
             begin
               cache_value = @acts_as_cacheable_cache.get key
             rescue Exception => e
-              logger.error "CACHE.get failed in primary key lookup with args #{args.inspect} and model #{self.class.name} so using mysql lookup instead, exception was #{e.inspect}"
+              if acts_as_cacheable_logger
+                acts_as_cacheable_logger.error "CACHE.get failed in primary key lookup with args #{args.inspect} and model #{self.class.name} so using mysql lookup instead, exception was #{e.inspect}"
+              end
               cache_value = super *args
             end
 
@@ -102,7 +107,9 @@ module Sequel
           begin
             result = super
           rescue Sequel::NoExistingObject
-            logger.error "attempted to delete a record that doesn't exist"
+            if acts_as_cacheable_logger
+              acts_as_cacheable_logger.error "attempted to delete a record that doesn't exist"
+            end
           end
           invalidate_cache!
           result
