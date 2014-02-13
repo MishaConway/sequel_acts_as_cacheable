@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name    = 'sequel_acts_as_cacheable'
-  s.version = '1.3'
+  s.version = '1.4'
   s.summary = 'Memcaching for sequel models.'
   s.license = 'MIT'
 

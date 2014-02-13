@@ -55,7 +55,7 @@ module Sequel
               cache_value = @acts_as_cacheable_cache.get key
             rescue Exception => e
               if acts_as_cacheable_logger
-                acts_as_cacheable_logger.error "CACHE.get failed in primary key lookup with args #{args.inspect} and model #{self.class.name} so using mysql lookup instead, exception was #{e.inspect}"
+                acts_as_cacheable_logger.error "CACHE.get failed in primary key lookup with args #{args.inspect} and model #{name} so using mysql lookup instead, exception was #{e.inspect}"
               end
               cache_value = super *args
             end
